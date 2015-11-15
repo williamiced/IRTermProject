@@ -36,3 +36,26 @@ class XmlConverter:
 
 			print "Done convert %d.xml" % (i)
 
+class DocReader:
+	dataHeader = Config.MOD_DATA_LOC
+
+	def remove_punctuation(self, text):
+		for ch in ["，", "；", "、", "。"]:
+			if ch in text:
+				text = text.replace(ch, "")
+		return text
+
+	def loadQuery(self, idx):
+		content = open(self.dataHeader + 'q' + str(idx) + '.txt', 'rb').read()
+		words = content.split(" ")
+		return words
+
+	def loadSegDoc(self, idx):
+		content = open(self.dataHeader + str(idx) + '.txt', 'rb').read()
+		words = content.split(" ")
+		return words
+
+	def __init__(self):
+		# Set Jieba to use traditional chinese dictionary
+		jieba.set_dictionary('dict.txt.big')
+		
