@@ -1,4 +1,5 @@
 XmlConverter用法:
+
 	xmlConverter = XmlConverter()
 	xmlConverter.convertDoc(0, 10)
 使用之前先把Config.py的路徑改一下
