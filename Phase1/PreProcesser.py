@@ -49,10 +49,10 @@ class XmlConverter:
 			words = jieba.cut(queryText, cut_all=False)
 			queryText = ' '.join(words)
 
-			with open(self.modifiedHeader + 'q' + str(i) + '.txt', 'wb') as f:
+			with open(self.modifiedHeader + 'q' + str(i+1) + '.txt', 'wb') as f:
 				f.write(queryText)
 
-			print "Done convert query %d" % (i)
+			print "Done convert query %d" % (i+1)
 
 	def __init__(self):
 		# Set Jieba to use traditional chinese dictionary
