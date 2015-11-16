@@ -1,5 +1,6 @@
 import sys
 import os
+import numpy
 
 import Config
 from PreProcesser import XmlConverter
@@ -12,7 +13,8 @@ if __name__ == "__main__":
 
 	if Config.PRE_PROCESS_ON == 1:
 		xmlConverter = XmlConverter()
-		xmlConverter.convertDoc(0, Config.DATA_SIZE)
+		#xmlConverter.convertDoc(0, Config.DATA_SIZE)
+		xmlConverter.convertQuery(0, Config.QUERY_SIZE)
 
 	else:
 		docReader = DocReader()
@@ -24,12 +26,14 @@ if __name__ == "__main__":
 			print "Done generate %d model" % (d)
 
 		scoreList = []
-		for q in range(0, 1):
+		for q in range(5, 6):
 			query = docReader.loadQuery(q)
 			for d in range(0, Config.TEST_DATA_SIZE):
 				score = docModeler.getSpecificScoreByQuery(d, query)
 				scoreList.append(score)
 				print "d", d, ": ", score
 
-		print "Most alike: " + str(scoreList.index(max(scoreList))) + ", value: " + str(max(scoreList))
+		sortedIdxArr = numpy.argsort(numpy.array(scoreList))
+		for i in range(len(sortedIdxArr)-1, len(sortedIdxArr)-4, -1):
+			print "Most alike: " + str(sortedIdxArr[i]) + ", value: " + str(scoreList[sortedIdxArr[i]])
 	

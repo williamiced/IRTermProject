@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import os
 import math
 import Config
 
@@ -8,6 +9,29 @@ class DocModeler:
 	collectionCountModel = {}
 	vocabularySize = 0
 	collectionSize = 0
+
+	def saveModel(self, idx, model):
+		if Config.BIG_DATA_MODE_ON:
+			if not os.path.exists("Temp"):
+				os.makedirs("Temp")
+			
+			with open("Temp/" + str(idx) + ".mdl", "wb" ) as f:
+				for key, value in model.items():
+					f.write("%s，%s，%d\n" % (key[0], key[1], value))
+		else:
+			self.docCountModels[idx] = model
+
+	def getModel(self, idx):
+		if Config.BIG_DATA_MODE_ON:
+			model = {}
+			with open("Temp/" + str(idx) + ".mdl", "rb" ) as f:
+				content = f.readlines()
+				for item in content:
+					records = item.split("，")
+					model[(records[0], records[1])] = int (records[2])
+			return model
+		else:
+			return self.docCountModels[idx]
 
 	def genModelByDocArr(self, doc, idx):
 		newCountModel = {}
@@ -42,19 +66,20 @@ class DocModeler:
 			newCountModel["", ""] += 1
 			# Update previous word
 			preWord = word
-		self.docCountModels[idx] = newCountModel
+
+		self.saveModel(idx, newCountModel)
 
 	def examineCollection(self):
 		for key, value in self.collectionCountModel.items():
 			print key, " -> ", value
 
 	def examineModel(self, idx):
-		model = self.docCountModels[idx]
+		model = self.getModel(idx)
 		for key, value in model.items():
 			print key[0], " -> ", key[1], ": ", value
 
 	def getJelinekMercerSmoothingScore(self, idx, wp, w):
-		model = self.docCountModels[idx]
+		model = self.getModel(idx)
 		f_w_D = 0
 		if ("", w) in model:
 			f_w_D = model[("", w)]
@@ -87,7 +112,7 @@ class DocModeler:
 
 	def getSpecificScoreByQuery(self, idx, query):
 		preWord = ""
-		prob = 0
+		prob = -1
 		count = 0
 		for word in query:
 			curFactor = self.getJelinekMercerSmoothingScore(idx, preWord, word)
