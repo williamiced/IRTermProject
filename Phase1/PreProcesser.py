@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import xml.etree.ElementTree
 import jieba
 import regex as re
 import Config
@@ -9,7 +10,7 @@ class XmlConverter:
 	modifiedHeader = Config.MOD_DATA_LOC
 
 	def remove_punctuation(self, text):
-		for ch in ["，", "；", "、", "。"]:
+		for ch in ["，", "；", "、", "。", "「", "」", "／", "：", "《", "》", "？", "◎", "！", "％", "（", "）", "●", "\n", "★", "．", "\r", " ", ".", "%", "~", "-", "+", "『", "』", ",", "(", ")"]:
 			if ch in text:
 				text = text.replace(ch, "")
 		return text
@@ -36,11 +37,32 @@ class XmlConverter:
 
 			print "Done convert %d.xml" % (i)
 
+	def convertQuery(self, fromIdx, toIdx):
+		root = xml.etree.ElementTree.parse(Config.QUERY_FILE_LOC).getroot()
+		for i in range(fromIdx, toIdx):
+			queryText = ""
+			for doc in root[i]:
+				queryText += (doc.attrib['title'] + doc[0].text)
+			
+			# Do jieba process and form a resulted string
+			queryText = self.remove_punctuation(queryText)
+			words = jieba.cut(queryText, cut_all=False)
+			queryText = ' '.join(words)
+
+			with open(self.modifiedHeader + 'q' + str(i) + '.txt', 'wb') as f:
+				f.write(queryText)
+
+			print "Done convert query %d" % (i)
+
+	def __init__(self):
+		# Set Jieba to use traditional chinese dictionary
+		jieba.set_dictionary('dict.txt.big')
+
 class DocReader:
 	dataHeader = Config.MOD_DATA_LOC
 
 	def remove_punctuation(self, text):
-		for ch in ["，", "；", "、", "。"]:
+		for ch in ["，", "；", "、", "。", "「", "」", "／", "：", "《", "》", "？", "◎", "！", "％", "（", "）", "●", "\n", "★", "．", "\r", " ", ".", "%", "~", "-", "+", "『", "』", ",", "(", ")"]:
 			if ch in text:
 				text = text.replace(ch, "")
 		return text
@@ -55,7 +77,4 @@ class DocReader:
 		words = content.split(" ")
 		return words
 
-	def __init__(self):
-		# Set Jieba to use traditional chinese dictionary
-		jieba.set_dictionary('dict.txt.big')
 		
