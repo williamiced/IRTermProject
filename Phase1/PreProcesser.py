@@ -10,7 +10,7 @@ class XmlConverter:
 	modifiedHeader = Config.MOD_DATA_LOC
 
 	def remove_punctuation(self, text):
-		for ch in ["，", "；", "、", "。", "「", "」", "／", "：", "《", "》", "？", "◎", "！", "％", "（", "）", "●", "\n", "★", "．", "\r", " ", ".", "%", "~", "-", "+", "『", "』", ",", "(", ")"]:
+		for ch in ["，", "；", "、", "。", "「", "」", "／", "：", "《", "》", "？", "◎", "！", "％", "（", "）", "●", "\n", "★", "．", "\r", " ", ".", "%", "~", "-", "+", "『", "』", ",", "(", ")", "︰"]:
 			if ch in text:
 				text = text.replace(ch, "")
 		return text
@@ -18,13 +18,12 @@ class XmlConverter:
 	def convertDoc(self, fromIdx, toIdx):
 		for i in range(fromIdx, toIdx):
 			# Read raw data from xml file
-			with open(self.rawHeader + str(i) + '.xml', 'rb') as f:
-				content = f.read()
-
-			# Get the target text from xml
-			startPos = content.find('<text>')
-			endPos = content.find('</text>')
-			content = content[startPos + 6: endPos]
+			root = xml.etree.ElementTree.parse(Config.RAW_DATA_LOC + str(i) + '.xml').getroot()
+			doc = root[0]
+			try:
+				content = doc.attrib['title'] + doc[0].text
+			except:
+				content = ""
 
 			# Do jieba process and form a resulted string
 			content = self.remove_punctuation(content)
@@ -42,7 +41,10 @@ class XmlConverter:
 		for i in range(fromIdx, toIdx):
 			queryText = ""
 			for doc in root[i]:
-				queryText += (doc.attrib['title'] + doc[0].text)
+				try:
+					queryText += (doc.attrib['title'] + doc[0].text)
+				except:
+					pass
 			
 			# Do jieba process and form a resulted string
 			queryText = self.remove_punctuation(queryText)
@@ -62,7 +64,7 @@ class DocReader:
 	dataHeader = Config.MOD_DATA_LOC
 
 	def remove_punctuation(self, text):
-		for ch in ["，", "；", "、", "。", "「", "」", "／", "：", "《", "》", "？", "◎", "！", "％", "（", "）", "●", "\n", "★", "．", "\r", " ", ".", "%", "~", "-", "+", "『", "』", ",", "(", ")"]:
+		for ch in ["，", "；", "、", "。", "「", "」", "／", "：", "《", "》", "？", "◎", "！", "％", "（", "）", "●", "\n", "★", "．", "\r", " ", ".", "%", "~", "-", "+", "『", "』", ",", "(", ")", "︰"]:
 			if ch in text:
 				text = text.replace(ch, "")
 		return text
