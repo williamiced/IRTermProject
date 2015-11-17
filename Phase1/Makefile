@@ -9,6 +9,7 @@ runPreProcess:
 	$(PC) LM.py -p
 
 runLanguageModel:
-	$(PC) LM.py -t
+	$(PC) LM.py -t && $(PC) LM.py -fp && $(PC) LM.py -ft
+
 
 

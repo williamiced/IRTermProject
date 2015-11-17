@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import os
 import xml.etree.ElementTree
 import jieba
 import regex as re
@@ -18,9 +19,9 @@ class XmlConverter:
 	def convertDoc(self, fromIdx, toIdx):
 		for i in range(fromIdx, toIdx):
 			# Read raw data from xml file
-			root = xml.etree.ElementTree.parse(Config.RAW_DATA_LOC + str(i) + '.xml').getroot()
-			doc = root[0]
 			try:
+				root = xml.etree.ElementTree.parse(Config.RAW_DATA_LOC + str(i) + '.xml').getroot()
+				doc = root[0]
 				content = doc.attrib['title'] + doc[0].text
 			except:
 				content = ""
@@ -70,7 +71,10 @@ class DocReader:
 		return text
 
 	def loadQuery(self, idx):
-		content = open(self.dataHeader + 'q' + str(idx) + '.txt', 'rb').read()
+		if Config.FEEDBACK_MODE == 2:
+			content = open(self.dataHeader + 'qn' + str(idx) + '.txt', 'rb').read()
+		else:
+			content = open(self.dataHeader + 'q' + str(idx) + '.txt', 'rb').read()
 		words = content.split(" ")
 		return words
 
