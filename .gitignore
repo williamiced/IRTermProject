@@ -2,3 +2,6 @@ webIR/
 Phase1/data/
 Phase1/*.pyc
 Phase1/Temp/
+Phase1/Dump/
+Phase1/*.csv
+*~

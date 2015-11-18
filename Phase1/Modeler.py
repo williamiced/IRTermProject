@@ -12,9 +12,6 @@ class DocModeler:
 
 	def saveModel(self, idx, model):
 		if Config.BIG_DATA_MODE_ON:
-			if not os.path.exists("Temp"):
-				os.makedirs("Temp")
-			
 			with open("Temp/" + str(idx) + ".mdl", "wb" ) as f:
 				for key, value in model.items():
 					f.write("%s，%s，%d\n" % (key[0], key[1], value))
@@ -86,7 +83,9 @@ class DocModeler:
 
 		f_wp_w_D = 0
 		if (wp, w) in model:
-			f_wp_w_D = model[(wp, w)]
+			f_wp_w_D += model[(wp, w)]
+		if Config.BI_TERM_ON and (w, wp) in model:
+			f_wp_w_D += model[(w, wp)]
 
 		f_wp_D = 0
 		if ("", wp) in model:
@@ -98,7 +97,9 @@ class DocModeler:
 
 		f_wp_w_C = 0
 		if (wp, w) in self.collectionCountModel:
-			f_wp_w_C = self.collectionCountModel[(wp, w)]
+			f_wp_w_C += self.collectionCountModel[(wp, w)]
+		if Config.BI_TERM_ON and (w, wp) in self.collectionCountModel:
+			f_wp_w_C += self.collectionCountModel[(w, wp)]
 
 		f_wp_C = 0
 		if ("", wp) in self.collectionCountModel:
@@ -109,6 +110,9 @@ class DocModeler:
 		f3 = (1-Config.LAMBDA_3) * (f_w_C + Config.MU_3 / self.vocabularySize) / (self.collectionSize + Config.MU_3)
 		f4 = Config.LAMBDA_3 * (f_wp_w_C + Config.MU_4 / (self.vocabularySize * self.vocabularySize) ) / (f_wp_C + Config.MU_4)
 		return (1-Config.LAMBDA_1)*(f1+f2) + Config.LAMBDA_1*(f3+f4)
+
+	def getJelinekMercerSmoothingScoreUnigram(self, idx, wp, w):
+		return (1-Config.LAMBDA_1) * f_w_D / model["", ""] + Config.LAMBDA_1 * f_w_C / self.collectionSize
 
 	def getSpecificScoreByQuery(self, idx, query):
 		preWord = ""

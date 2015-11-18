@@ -1,8 +1,11 @@
 PRE_PROCESS_ON = 0
 BIG_DATA_MODE_ON = 0
-DATA_SIZE = 10000
-TEST_DATA_SIZE = 10000
+FEEDBACK_MODE = 0
+BI_TERM_ON = 0
+DATA_SIZE = 100
+TEST_DATA_SIZE = 100
 QUERY_SIZE = 10
+RELEVANCE_SIZE = 10
 RAW_DATA_LOC = '/cygdrive/c/Users/William/Desktop/O/Homework/IR/Phase1/data/news_story_dataset/'
 MOD_DATA_LOC = '/cygdrive/c/Users/William/Desktop/O/Homework/IR/Phase1/data/news_story_dataset_modified/'
 QUERY_FILE_LOC = '/cygdrive/c/Users/William/Desktop/O/Homework/IR/Phase1/data/query_story.xml'
