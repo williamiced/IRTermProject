@@ -2,7 +2,7 @@ Usage:
 >	1. Modify "Config.py" to satisfied the requirement of the parameters. (Such as amount of training data and testing data)
 >	2. Check all directories mentioned in your "Config.py" is already exists.
 >	3. Run the following command:
-> > 		[Phase1]
+> > > 		
 > > >			CMD: make phase1_pre
 > > >			Explanation: Run phase1 pre process
 
