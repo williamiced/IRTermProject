@@ -87,7 +87,7 @@ if __name__ == "__main__":
 			print "Done generate %d model" % (d)
 
 		queryResult = []
-		for q in range(11, 18):
+		for q in range(1, 18):
 			scoreList = []
 			query = docReader.loadQuery(q)
 			for d in range(0, Config.TEST_DATA_SIZE):

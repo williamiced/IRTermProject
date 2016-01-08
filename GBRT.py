@@ -14,6 +14,10 @@ from Feedback import FeedbackQueryGenerator
 
 # Import for Gradient boosting classifier
 from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.decomposition import NMF
+from sklearn.cross_validation import train_test_split
+from sklearn import random_projection
 
 def initDirectories():
 	# Create directory if necessary
@@ -98,20 +102,27 @@ if __name__ == "__main__":
                 Y, trainDataIdxs = trainDataReader.getTrainAnswers()
                 print "Get Train Answers Done"
 
-                tfidfMat = featureModeler.extractFeaturesMatrix(trainDataIdxs)
+                tfidfMat, Y = featureModeler.extractFeaturesMatrix(trainDataIdxs, Y)
                 print "Calc data features done"
+                '''
+                print tfidfMat.shape
+                transformer = random_projection.SparseRandomProjection(n_components=700000)
+                tfidfMat = transformer.fit_transform(tfidfMat)
+                print tfidfMat.shape
+                '''
+                
+                X_train = tfidfMat[:-Config.TEST_DATA_SIZE]
+                X_test = tfidfMat[-Config.TEST_DATA_SIZE:]
 
-                X_train = tfidfMat[:len(trainDataIdxs)]
-                X_test = tfidfMat[len(trainDataIdxs):]
-
-                if os.path.isfile("clf_gbrt.pkl"):
-                    with open('clf_gbrt.pkl', 'rb') as fclf:
+                if os.path.isfile("clf_rf.pkl"):
+                    with open('clf_rf.pkl', 'rb') as fclf:
                         clf = cPickle.load(fclf)
                 else:
-                    clf = GradientBoostingClassifier().fit(X_train, Y)
+                    #clf = GradientBoostingClassifier().fit(X_train, Y)
+                    clf = RandomForestClassifier(n_estimators=500).fit(X_train, Y)
                     print "Done get classifier"
 
-                    with open('clf_gbrt.pkl', 'wb') as fclf:
+                    with open('clf_rf.pkl', 'wb') as fclf:
                         cPickle.dump(clf, fclf)
                         print "Save classifier succussfully"
                 
@@ -124,7 +135,7 @@ if __name__ == "__main__":
                     testFeatures.append( docModeler.getTestCountFeatures(d) )
                     print "Done Test Feature %d generation" % d
                 '''
-                testResult = clf.predict(X_test)
+                testResult = clf.predict(X_test.toarray())
                 print "Done prediction!"
                     
                 outputPhase2CSV(testResult) 

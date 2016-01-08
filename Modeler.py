@@ -3,8 +3,13 @@
 import os
 import math
 import Config
+import cPickle
+import numpy as np
 
+from scipy.sparse import vstack
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.cross_validation import train_test_split
+
 
 class DocModeler:
 	docCountModels = {}
@@ -177,31 +182,46 @@ class DocModeler:
 class FeatureBasedModeler:
     collectionDict = {}
 
-    def extractFeaturesMatrix(self, trainDataIdxs):
+    def extractFeaturesMatrix(self, trainDataIdxs, Y):
         rawDocs = []
-        for idx in trainDataIdxs:
-            with open(Config.MOD_DATA_LOC + str(idx) + '.txt', 'rb') as f:
-                rawDocs.append( f.read() )
-                print "Train Data # %d loaded" % (idx)
-        trainDataSize = len(trainDataIdxs)
+        rawTests = []
+        
+        if os.path.isfile("tfidf_raw.pkl"):
+            with open("tfidf_raw.pkl", 'rb') as f:
+                tfidf = cPickle.load(f)
+        else:
+            for idx in trainDataIdxs:
+                with open(Config.MOD_DATA_LOC + str(idx) + '.txt', 'rb') as f:
+                    rawDocs.append( f.read() )
+                    print "Train Data # %d loaded" % (idx)
+            trainDataSize = len(trainDataIdxs)
+ 
+            vectorizer = TfidfVectorizer(ngram_range=(1, 1), min_df=0.00005)
+            vectorizer.fit( rawDocs )
 
-        with open(Config.OUTPUT_SRC_FILE, 'rb') as ftemplate:
-            templateLines = ftemplate.readlines()
-            for templateLine in templateLines:
-                if 'NewsId' in templateLine:
-                    continue
-                else:
-                    testFileName = templateLine.replace('\n', '')
-                    testFilePath = Config.TEST_DATA_MODIFIED_LOC + testFileName + '.txt'
-                    with open(testFilePath, 'rb') as ftest:
-                        rawDocs.append( ftest.read() )
-                        print "Test Data %s loaded" % (testFileName)
+            tfidf_train = vectorizer.transform( rawDocs )
+
+            with open(Config.OUTPUT_SRC_FILE, 'rb') as ftemplate:
+                templateLines = ftemplate.readlines()
+                for templateLine in templateLines:
+                    if 'NewsId' in templateLine:
+                        continue
+                    else:
+                        testFileName = templateLine.replace('\n', '')
+                        testFilePath = Config.TEST_DATA_MODIFIED_LOC + testFileName + '.txt'
+                        with open(testFilePath, 'rb') as ftest:
+                            rawTests.append( ftest.read() )
+                            print "Test Data %s loaded" % (testFileName)
         
-        vectorizer = TfidfVectorizer(ngram_range=(1, 2))
-        print "Calculating tfidf matrix ......"
-        
-        tfidf = vectorizer.fit_transform( rawDocs )
+            tfidf_test = vectorizer.transform( rawTests )
+            tfidf = vstack([tfidf_train, tfidf_test])
+
+            with open("tfidf_raw.pkl", 'wb') as f:
+                cPickle.dump(tfidf, f)
+                print "Save TFIDF file successfully"
+    
         print tfidf.shape
+        Y_train = Y
         '''
         words = vectorizer.get_feature_names()
         for i in xrange(len(rawDocs)):
@@ -210,7 +230,14 @@ class FeatureBasedModeler:
                 if tfidf[i,j] > 1e-5:
                     print words[j].encode('utf-8'), tfidf[i,j]
         '''
-        return tfidf
+        return tfidf, Y_train
+
+    def csr_vappend(self, a, b):
+        a.data = np.hstack((a.data,b.data))
+        a.indices = np.hstack((a.indices,b.indices))
+        a.indptr = np.hstack((a.indptr,(b.indptr + a.nnz)[1:]))
+        a._shape = (a.shape[0]+b.shape[0],b.shape[1])
+        return a
 
     def __init__(self):
         print "Generating FeatureBasedModeler..."
